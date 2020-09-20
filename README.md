@@ -1,4 +1,4 @@
-# AT05_JDMD
+# BME Capstone 2021 - Spectral Optical CT Scanner 
 # John, Daniel, Meg, Daniil.
 # JDMD.
 
