@@ -1,5 +1,5 @@
 import tkinter as tk
-import window_elements as we
+from src import window_elements as we
 
 
 class Gui:
