@@ -5,7 +5,7 @@ import threading
 from skimage.transform import rescale, iradon, iradon_sart
 
 
-def _make_square(im, minsize=256, fill_color=(255, 255, 255, 0)):
+def _make_square(im: Image, minsize: int = 256, fill_color: tuple = (255, 255, 255, 0)) -> np.array:
     x, y = im.size
     size = max(minsize, x, y)
     new_im = Image.new('RGBA', (size, size), fill_color)
@@ -13,7 +13,7 @@ def _make_square(im, minsize=256, fill_color=(255, 255, 255, 0)):
     return new_im
 
 
-def _prepare_img(img_path, resolution=256, padding=0.3):
+def _prepare_img(img_path: Path, resolution: int = 256, padding: float = 0.3) -> np.array:
     src = Image.open(img_path)
     img = _make_square(src, minsize=int(src.size[0] * (1 + padding)))
     img = ImageOps.grayscale(img)
@@ -22,7 +22,7 @@ def _prepare_img(img_path, resolution=256, padding=0.3):
     return img
 
 
-def load_images(dir_path, resolution=256, padding=0.3):
+def load_images(dir_path: str, resolution: int = 256, padding: float = 0.3) -> np.array:
     files = [x for x in Path(dir_path).rglob('*')]
     n = len(files)
     images = np.zeros((resolution, resolution, n))
@@ -33,7 +33,7 @@ def load_images(dir_path, resolution=256, padding=0.3):
     return images
 
 
-def make_sinogram(images):
+def make_sinogram(images: np.array) -> np.array:
     print('Constructing sinogram\n')
     sinogram = np.zeros(images.shape)
     for i in range(sinogram.shape[0]):
@@ -41,7 +41,7 @@ def make_sinogram(images):
     print('Sinogram construction complete')
 
 
-def reconstruct_fbp(sinogram, nthreads=1, method='fbp', **kwargs):
+def reconstruct_fbp(sinogram: np.array, nthreads: int = 1, method: str = 'fbp', **kwargs) -> np.array:
     reconstructed = np.zeros((sinogram.shape[0], sinogram.shape[0], sinogram.shape[0]))
     lock = threading.Lock()
 
