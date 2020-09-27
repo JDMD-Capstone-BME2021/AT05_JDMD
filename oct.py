@@ -13,7 +13,7 @@ def _make_square(im, minsize=256, fill_color=(255, 255, 255, 0)):
     return new_im
 
 
-def prepare_img(img_path, resolution=256, padding=0.3):
+def _prepare_img(img_path, resolution=256, padding=0.3):
     src = Image.open(img_path)
     img = _make_square(src, minsize=int(src.size[0] * (1 + padding)))
     img = ImageOps.grayscale(img)
@@ -28,7 +28,7 @@ def load_images(dir_path, resolution=256, padding=0.3):
     images = np.zeros((resolution, resolution, n))
     for i in range(n):
         print('Reading ' + str(files[i]) + '\n')
-        images[:, :, i] = prepare_img(files[i], resolution=resolution, padding=padding)
+        images[:, :, i] = _prepare_img(files[i], resolution=resolution, padding=padding)
     print('Finished reading images\n')
     return images
 
