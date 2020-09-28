@@ -74,9 +74,10 @@ Makes a sinogram from an image array
     for i in range(sinogram.shape[0]):
         sinogram[i, :, :] = np.squeeze(images[i, :, :])
     print('Sinogram construction complete')
+    return sinogram
 
 
-def reconstruct_fbp(sinogram: np.array, nthreads: int = 1, method: str = 'fbp', **kwargs) -> np.array:
+def reconstruct(sinogram: np.array, nthreads: int = 1, method: str = 'fbp', **kwargs) -> np.array:
     """
 Reconstructs tomographic images from a sinogram array
     :param sinogram: sinogram array, indexed at position 0
