@@ -92,7 +92,28 @@ class Gui:
         self.save_numpy(name, self.input)
 
     def process(self):
-        pass
+        # freezing parameters
+        input_dir = self.input_dir
+        resolution = self.resolution
+        padding = self.padding
+        method = self.method
+        nthreads = self.nthreads
+        start_angle = self.start_angle
+        end_angle = self.end_angle
+
+        # loading images
+        self.input = oct.load_images(input_dir, resolution=resolution, padding=padding)
+
+        # constructing sinogram
+        self.sinogram = oct.make_sinogram(self.input)
+
+        # calculating reconstruction parameters
+        nsamples = self.input.shape[2]
+        theta = np.linspace(start_angle, end_angle, nsamples, endpoint=False)
+        reconstruction_opt = {'theta': theta}
+
+        # reconstructing image
+        self.reconstructed = oct.reconstruct(self.sinogram, nthreads=nthreads, method=method, **reconstruction_opt)
 
     @property
     def method(self):
