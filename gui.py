@@ -122,6 +122,39 @@ class Gui:
         return 'sart'
 
     @property
+    def fbp_filter(self):
+        a = self._fbp_filter.get()
+        if a == 0:
+            return 'ramp'
+        elif a == 1:
+            return 'shepp-logan'
+        elif a == 2:
+            return 'cosine'
+        elif a == 3:
+            return 'hamming'
+        elif a == 4:
+            return 'hann'
+        return None
+
+    @property
+    def fbp_interpolation(self):
+        a = self._fbp_interpolation.get()
+        if a == 0:
+            return 'linear'
+        if a == 1:
+            return 'nearest'
+        if a == 2:
+            return 'cubic'
+
+    @property
+    def sart_itarations(self):
+        return self._sart_iterations.get()
+
+    @property
+    def sart_relaxation(self):
+        return self._sart_relaxation.get()
+
+    @property
     def start_angle(self):
         return self._start_angle.get()
 
