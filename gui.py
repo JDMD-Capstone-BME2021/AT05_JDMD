@@ -147,7 +147,7 @@ class Gui:
             return 'cubic'
 
     @property
-    def sart_itarations(self):
+    def sart_iterations(self):
         return self._sart_iterations.get()
 
     @property
