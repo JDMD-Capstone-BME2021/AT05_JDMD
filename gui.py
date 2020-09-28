@@ -100,6 +100,10 @@ class Gui:
         nthreads = self.nthreads
         start_angle = self.start_angle
         end_angle = self.end_angle
+        fbp_filter = self.fbp_filter
+        fbp_interpolation = self.fbp_interpolation
+        sart_iterations = self.sart_iterations
+        sart_relaxation = self.sart_relaxation
 
         # loading images
         self.input = oct.load_images(input_dir, resolution=resolution, padding=padding)
@@ -111,9 +115,21 @@ class Gui:
         nsamples = self.input.shape[2]
         theta = np.linspace(start_angle, end_angle, nsamples, endpoint=False)
         reconstruction_opt = {'theta': theta}
+        if method == 'fbp':
+            reconstruction_opt['filter_name'] = fbp_filter
+            reconstruction_opt['interpolation'] = fbp_interpolation
+        elif method == 'sart':
+            reconstruction_opt['relaxation'] = sart_relaxation
 
         # reconstructing image
         self.reconstructed = oct.reconstruct(self.sinogram, nthreads=nthreads, method=method, **reconstruction_opt)
+
+        # additional iterations for SART
+        if method == 'sart' and sart_iterations > 1:
+            for i in range(1, sart_iterations):
+                reconstruction_opt['image'] = self.reconstructed
+                self.reconstructed = oct.reconstruct(self.sinogram, nthreads=nthreads, method=method,
+                                                     **reconstruction_opt)
 
     @property
     def method(self):
