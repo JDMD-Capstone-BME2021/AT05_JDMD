@@ -3,6 +3,8 @@ from tkinter import ttk
 from tkinter import filedialog
 from src import callbacks
 
+_g_button_options = {'padx': 5, 'pady': 5}
+
 
 class ManagedPack:
     def __init__(self):
@@ -127,3 +129,26 @@ class DirBrowser:
 
     def get(self):
         return self.dir
+
+
+class SaveAs(tk.Frame):
+    def __init__(self, master, text='', file_options=None, save_fcn=None):
+        super().__init__(master)
+        if file_options is None:
+            file_options = {}
+
+        self.save_fcn = save_fcn
+
+        btn_options = {'fill': tk.BOTH}
+        tk.Button(self, text=text, command=self._saveas).pack(**dict(_g_button_options, **btn_options))
+
+        self.file_options = file_options
+        file_options['parent'] = master
+
+    def _saveas(self):
+        fname = filedialog.asksaveasfilename(**self.file_options)
+        if fname:
+            if self.save_fcn is None:
+                return open(fname, 'w')
+            else:
+                self.save_fcn(fname)

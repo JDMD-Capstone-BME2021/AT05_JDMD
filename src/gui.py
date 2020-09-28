@@ -1,9 +1,14 @@
 import tkinter as tk
+import numpy as np
 from src import window_elements as we
 
 
 class Gui:
     def __init__(self):
+        self.input = None
+        self.sinogram = None
+        self.output = None
+
         self._root = tk.Tk()
         self._root.title('Radon')
 
@@ -37,6 +42,51 @@ class Gui:
         self._sart_pack.add(self._sart_relaxation, fill=tk.X, expand=True)
 
         self._intput_dir = we.DirBrowser(t_master=self._f_options, t_max_len=16)
+
+        self._f_save = tk.LabelFrame(self._root)
+        self._f_save.grid(row=1, column=0)
+
+        options = {'filetypes': [('Numpy array', '.npy'), ('Comma-separated values', '.csv')],
+                   'initialfile': 'input.npy'}
+        self._save_input = we.SaveAs(master=self._f_save, text='Save input', file_options=options,
+                                     save_fcn=self.save_input)
+        self._save_input.pack(side=tk.LEFT)
+
+        options['initialfile'] = 'sinogram.npy'
+        self._save_input = we.SaveAs(master=self._f_save, text='Save sinogram', file_options=options,
+                                     save_fcn=self.save_sinogram)
+        self._save_input.pack(side=tk.LEFT)
+
+        options['initialfile'] = 'roconstruction.npy'
+        self._save_input = we.SaveAs(master=self._f_save, text='Save reconstruction', file_options=options,
+                                     save_fcn=self.save_reconstructed)
+        self._save_input.pack(side=tk.LEFT)
+
+    @staticmethod
+    def save_numpy(name, arr):
+        ext = name[-3:-1]
+        if ext == 'npy':
+            np.save(name, arr)
+        elif ext == 'csv':
+            np.savetxt(name, arr, delimiter=',')
+
+    def save_input(self, name):
+        if self.input is None:
+            print('Input is not processes\n')
+            return
+        self.save_numpy(name, self.input)
+
+    def save_sinogram(self, name):
+        if self.input is None:
+            print('Sinogram is not processed\n')
+            return
+        self.save_numpy(name, self.sinogram)
+
+    def save_reconstructed(self, name):
+        if self.input is None:
+            print('Reconstruction is not processed\n')
+            return
+        self.save_numpy(name, self.input)
 
     def nsamples(self):
         return self._nsamples.get()
