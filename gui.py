@@ -1,5 +1,6 @@
 import tkinter as tk
 import numpy as np
+import oct
 from src import window_elements as we
 
 
@@ -15,9 +16,11 @@ class Gui:
         self._f_options = tk.LabelFrame(self._root, borderwidth=1, relief=tk.SUNKEN, labelanchor='nw', text='Options')
         self._f_options.grid(row=0, column=0)
 
-        self._nsamples = we.IntField(self._f_options, 'Number of samples')
+        self._resolution = we.IntField(self._f_options, 'Resolution', 256)
+        self._padding = we.FloatField(self._f_options, 'Padding', 0.3)
         self._start_angle = we.FloatField(self._f_options, 'Start angle', 0)
         self._end_angle = we.FloatField(self._f_options, 'End angle', 180.)
+        self._nthreads = we.IntField(self._f_options, 'Threads', 4)
 
         self._method = we.RadioMenu(self._f_options)
         self._method.add_option('FBP', 0, 0, 0)
@@ -88,20 +91,38 @@ class Gui:
             return
         self.save_numpy(name, self.input)
 
-    def nsamples(self):
-        return self._nsamples.get()
+    def process(self):
+        pass
 
+    @property
     def method(self):
-        return self._method.get()
+        if self._method.get() == 0:
+            return 'fbp'
+        return 'sart'
 
+    @property
     def start_angle(self):
         return self._start_angle.get()
 
+    @property
     def end_angle(self):
         return self._end_angle.get()
 
-    def src_dir(self):
+    @property
+    def input_dir(self):
         return self._intput_dir.get()
+
+    @property
+    def resolution(self):
+        return self._resolution.get()
+
+    @property
+    def padding(self):
+        return self._padding.get()
+
+    @property
+    def nthreads(self):
+        return self._nthreads.get()
 
     def run(self):
         self._root.mainloop()
