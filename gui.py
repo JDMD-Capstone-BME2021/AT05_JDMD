@@ -8,7 +8,7 @@ class Gui:
     def __init__(self):
         self.input = None
         self.sinogram = None
-        self.output = None
+        self.reconstructed = None
 
         self._root = tk.Tk()
         self._root.title('Radon')
