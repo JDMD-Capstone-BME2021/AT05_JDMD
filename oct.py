@@ -86,6 +86,8 @@ Reconstructs tomographic images from a sinogram array
     :param kwargs: arguments forwarded to reconstuction method
     :return: tomographic image todo: add specification to axes
     """
+    print('Reconstructing image with parameters:'
+          '\n\tsize: {0}\n\tnthreads: {1}\n\tmethod: {2}'.format(sinogram.shape[0], nthreads, method))
     reconstructed = np.zeros((sinogram.shape[0], sinogram.shape[0], sinogram.shape[0]))
     lock = threading.Lock()
 
