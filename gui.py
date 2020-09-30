@@ -46,7 +46,7 @@ class Gui:
         self._save_sinogram.pack(side=tk.LEFT)
 
         # Tool bar -- Save reconstruction
-        options['initialfile'] = 'roconstruction.npy'
+        options['initialfile'] = 'reconstruction.npy'
         self._save_reconstruction = we.SaveAs(master=self._tool_bar, text='Save reconstruction', file_options=options,
                                               save_fcn=self.save_reconstruction)
         self._save_reconstruction.configure(**self.theme)
@@ -166,6 +166,10 @@ class Gui:
         # endregion
         # endregion
 
+        self._process_start = tk.Button(master=self.work_area, text='Reconstruct', command=self.process)
+        self._process_start.configure(**self.theme)
+        self._process_start.place(relx=0.01, rely=0.71, relheight=0.05, relwidth=0.25)
+
         # Input configuration options -- Source image browser
         self._intput_dir = we.DirBrowser(t_master=self._input_config_opts, label_text='Input directory', t_max_len=32)
         self._intput_dir.configure(**self.theme)
@@ -175,7 +179,8 @@ class Gui:
 
     @staticmethod
     def save_numpy(name, arr):
-        ext = name[-3:-1]
+        ext = name[-3:]
+        print(ext)
         if ext == 'npy':
             np.save(name, arr)
         elif ext == 'csv':
@@ -183,21 +188,24 @@ class Gui:
 
     def save_input(self, name):
         if self.input is None:
-            print('Input is not processes\n')
+            print('Input is not processed\n')
             return
         self.save_numpy(name, self.input)
+        print('Input saved as ' + name)
 
     def save_sinogram(self, name):
         if self.input is None:
             print('Sinogram is not processed\n')
             return
         self.save_numpy(name, self.sinogram)
+        print('Sinogram saved as ' + name)
 
     def save_reconstruction(self, name):
         if self.input is None:
             print('Reconstruction is not processed\n')
             return
-        self.save_numpy(name, self.input)
+        self.save_numpy(name, self.reconstructed)
+        print('Reconstruction saved as ' + name)
 
     def process(self):
         # freezing parameters
@@ -224,7 +232,7 @@ class Gui:
         theta = np.linspace(start_angle, end_angle, nsamples, endpoint=False)
         reconstruction_opt = {'theta': theta}
         if method == 'fbp':
-            reconstruction_opt['filter_name'] = fbp_filter
+            reconstruction_opt['filter'] = fbp_filter
             reconstruction_opt['interpolation'] = fbp_interpolation
         elif method == 'sart':
             reconstruction_opt['relaxation'] = sart_relaxation
@@ -235,9 +243,11 @@ class Gui:
         # additional iterations for SART
         if method == 'sart' and sart_iterations > 1:
             for i in range(1, sart_iterations):
+                print('SART iteration ' + str(i + 1))
                 reconstruction_opt['image'] = self.reconstructed
                 self.reconstructed = oct.reconstruct(self.sinogram, nthreads=nthreads, method=method,
                                                      **reconstruction_opt)
+        print('Reconstruction complete')
 
     @property
     def method(self):
@@ -269,6 +279,7 @@ class Gui:
             return 'nearest'
         if a == 2:
             return 'cubic'
+        return 'linear'
 
     @property
     def sart_iterations(self):
