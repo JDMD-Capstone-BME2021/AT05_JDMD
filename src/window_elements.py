@@ -49,11 +49,17 @@ class FloatField(Field):
         validation = t_master.register(callbacks.is_float_callback)
         super().__init__(t_master, t_text, validation, t_default)
 
+    def get(self):
+        return float(super(FloatField, self).get())
+
 
 class IntField(Field):
     def __init__(self, t_master, t_text='', t_default=None):
         validation = t_master.register(callbacks.is_int_callback)
         super().__init__(t_master, t_text, validation, t_default)
+
+    def get(self):
+        return int(super(IntField, self).get())
 
 
 class RadioMenu(tk.Frame):
