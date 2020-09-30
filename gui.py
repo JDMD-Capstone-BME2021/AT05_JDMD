@@ -2,6 +2,7 @@ import tkinter as tk
 import numpy as np
 import oct
 from src import window_elements as we
+from PIL import Image
 
 
 class Gui:
@@ -10,60 +11,167 @@ class Gui:
         self.sinogram = None
         self.reconstructed = None
 
-        self._root = tk.Tk()
-        self._root.title('Radon')
+        self._bgcolor = '#d9d9d9'
+        self.theme = {'background': self._bgcolor}
+        self.btn_opts = {'padx': 2, 'pady': 2}
 
-        self._f_options = tk.LabelFrame(self._root, borderwidth=1, relief=tk.SUNKEN, labelanchor='nw', text='Options')
-        self._f_options.grid(row=0, column=0)
+        self.root = tk.Tk()
+        self.root.title('Radon')
+        self.root.minsize(800, 600)
+        self.root.resizable(1, 1)
+        self.root.configure(**self.theme)
 
-        self._resolution = we.IntField(self._f_options, 'Resolution', 256)
-        self._padding = we.FloatField(self._f_options, 'Padding', 0.3)
-        self._start_angle = we.FloatField(self._f_options, 'Start angle', 0)
-        self._end_angle = we.FloatField(self._f_options, 'End angle', 180.)
-        self._nthreads = we.IntField(self._f_options, 'Threads', 4)
+        # region Tool bar
+        self._tool_bar = tk.Frame(self.root)
+        self._tool_bar.configure(**self.theme)
+        self._tool_bar.place(relx=0.0, rely=0.0, relheight=0.05, relwidth=1.0)
 
-        self._method = we.RadioMenu(self._f_options)
+        # Tool bar -- Save input
+        options = {'filetypes': [('Numpy array', '.npy'), ('Comma-separated values', '.csv')],
+                   'initialfile': 'input.npy'}
+        self._save_input = we.SaveAs(master=self._tool_bar, text='Save input', file_options=options,
+                                     save_fcn=self.save_input)
+        self._save_input.configure(**self.theme)
+        self._save_input.configure(**self.btn_opts)
+        self._save_input.configure_btn(**self.theme)
+        self._save_input.pack(side=tk.LEFT)
+
+        # Tool bar -- Save sinogram
+        options['initialfile'] = 'sinogram.npy'
+        self._save_sinogram = we.SaveAs(master=self._tool_bar, text='Save sinogram', file_options=options,
+                                        save_fcn=self.save_sinogram)
+        self._save_sinogram.configure(**self.theme)
+        self._save_sinogram.configure(**self.btn_opts)
+        self._save_sinogram.configure_btn(**self.theme)
+        self._save_sinogram.pack(side=tk.LEFT)
+
+        # Tool bar -- Save reconstruction
+        options['initialfile'] = 'roconstruction.npy'
+        self._save_reconstruction = we.SaveAs(master=self._tool_bar, text='Save reconstruction', file_options=options,
+                                              save_fcn=self.save_reconstruction)
+        self._save_reconstruction.configure(**self.theme)
+        self._save_reconstruction.configure(**self.btn_opts)
+        self._save_reconstruction.configure_btn(**self.theme)
+        self._save_reconstruction.pack(side=tk.LEFT)
+        # endregion
+
+        # region Work area
+        self.work_area = tk.Frame(self.root)
+        self.work_area.place(relx=0.0, rely=0.05, relheight=0.95, relwidth=1.0)
+        self.work_area.configure(relief='groove')
+        self.work_area.configure(borderwidth="2")
+        self.work_area.configure(**self.theme)
+
+        # Canvas
+        # self._preview = tk.Canvas(self.work_area)
+        self._preview = we.ImgView(self.work_area)
+        self._preview.place(relx=0.29, rely=0.01, relheight=0.7, relwidth=0.7)
+        self._preview.configure(**self.theme)
+        self._preview.configure(borderwidth="2")
+        self._preview.configure(insertbackground="black")
+        self._preview.configure(relief="ridge")
+        self._preview.configure(selectbackground="blue")
+        self._preview.configure(selectforeground="white")
+
+        # region Options
+        self._options = tk.LabelFrame(self.work_area)
+        self._options.place(relx=0.01, rely=0.01, relheight=0.7, relwidth=0.25)
+        self._options.configure(relief='groove')
+        self._options.configure(text='Configuration')
+        self._options.configure(**self.theme)
+
+        # Options -- Image resolution
+        self._resolution = we.IntField(self._options, 'Resolution', 256)
+        self._resolution.configure(**self.theme)
+        self._resolution.configure_label(**self.theme)
+        self._resolution.pack(fill=tk.X, expand=True)
+        self._resolution.place(relx=0.01, rely=0.01, relheight=0.06, relwidth=0.98)
+
+        # Options -- Image padding
+        self._padding = we.FloatField(self._options, 'Padding', 0.3)
+        self._padding.configure(**self.theme)
+        self._padding.configure_label(**self.theme)
+        self._padding.pack(fill=tk.X, expand=True)
+        self._padding.place(relx=0.01, rely=0.07, relheight=0.06, relwidth=0.98)
+
+        # Options -- Start angle
+        self._start_angle = we.FloatField(self._options, 'Start angle', 0)
+        self._start_angle.configure(**self.theme)
+        self._start_angle.configure_label(**self.theme)
+        self._start_angle.pack(fill=tk.X, expand=True)
+        self._start_angle.place(relx=0.01, rely=0.13, relheight=0.06, relwidth=0.98)
+
+        # Options -- End angle
+        self._end_angle = we.FloatField(self._options, 'End angle', 180.)
+        self._end_angle.configure(**self.theme)
+        self._end_angle.configure_label(**self.theme)
+        self._end_angle.pack(fill=tk.X, expand=True)
+        self._end_angle.place(relx=0.01, rely=0.19, relheight=0.06, relwidth=0.98)
+
+        # Options -- Number of threads
+        self._nthreads = we.IntField(self._options, 'Threads', 4)
+        self._nthreads.configure(**self.theme)
+        self._nthreads.configure_label(**self.theme)
+        self._nthreads.pack(fill=tk.X, expand=True)
+        self._nthreads.place(relx=0.01, rely=0.25, relheight=0.06, relwidth=0.98)
+
+        # Options -- Reconstruction method
+        self._method = we.RadioMenu(self._options)
         self._method.add_option('FBP', 0, 0, 0)
         self._method.add_option('SART', 1, 0, 1)
+        self._method.configure(**self.theme)
+        self._method.set_theme(**self.theme)
+        self._method.place(relx=0.01, rely=0.31, relheight=0.06, relwidth=0.98)
 
-        self._f_method_options = tk.LabelFrame(self._f_options, borderwidth=1, labelanchor='nw')
-        self._f_method_options.pack(fill=tk.X, expand=True)
-        self._method.add_observer(self.__method_observer)
+        # Options -- Advanced reconstruction options
+        self._method_options = tk.LabelFrame(self._options, borderwidth=1, labelanchor='nw')
+        self._method_options.pack(fill=tk.X, expand=True)
+        self._method_options.configure(**self.theme)
+        self._method_options.place(relx=0.01, rely=0.37, relwidth=0.98)
 
         self._fbp_pack = we.ManagedPack()
-        self._fbp_filter = we.Dropdown(self._f_method_options, 'Filter',
-                                       ['Ramp', 'Shepp-Logan', 'Cosine', 'Hamming', 'Hann', 'None'], False)
+
+        self._fbp_filter = we.Dropdown(self._method_options, 'Filter',
+                                       ['Ramp', 'Shepp-Logan', 'Cosine', 'Hamming', 'Hann', 'None'])
+        self._fbp_filter.configure(**self.theme)
+        self._fbp_filter.configure_label(**self.theme)
+        self._fbp_filter.configure_combobox(**self.theme)
         self._fbp_pack.add(self._fbp_filter, fill=tk.X, expand=True)
-        self._fbp_interpolation = we.Dropdown(self._f_method_options, 'Interpolation', ['Linear', 'Nearest', 'Cubic'],
-                                              False)
+
+        self._fbp_interpolation = we.Dropdown(self._method_options, 'Interpolation', ['Linear', 'Nearest', 'Cubic'])
+        self._fbp_interpolation.configure(**self.theme)
+        self._fbp_interpolation.configure_label(**self.theme)
+        self._fbp_interpolation.configure_combobox(**self.theme)
         self._fbp_pack.add(self._fbp_interpolation, fill=tk.X, expand=True)
 
         self._sart_pack = we.ManagedPack()
-        self._sart_iterations = we.IntField(self._f_method_options, 'Iterations', 1, False)
+        self._sart_iterations = we.IntField(self._method_options, 'Iterations', 1)
+        self._sart_iterations.configure(**self.theme)
+        self._sart_iterations.configure_label(**self.theme)
         self._sart_pack.add(self._sart_iterations, fill=tk.X, expand=True)
-        self._sart_relaxation = we.FloatField(self._f_method_options, 'Relaxation', 0.15, False)
+
+        self._sart_relaxation = we.FloatField(self._method_options, 'Relaxation', 0.15)
+        self._sart_relaxation.configure(**self.theme)
+        self._sart_relaxation.configure_label(**self.theme)
         self._sart_pack.add(self._sart_relaxation, fill=tk.X, expand=True)
 
-        self._intput_dir = we.DirBrowser(t_master=self._f_options, t_max_len=16)
+        # Options -- Reconstruction method observer: updates managed packs
+        self._method.add_observer(self.__method_observer)
 
-        self._f_save = tk.LabelFrame(self._root)
-        self._f_save.grid(row=1, column=0)
+        self._input_config_opts = tk.LabelFrame(self.work_area)
+        self._input_config_opts.place(relx=0.01, rely=0.8, relheight=0.2, relwidth=0.6)
+        self._input_config_opts.configure(relief='groove')
+        self._input_config_opts.configure(text='Input configuration')
+        self._input_config_opts.configure(**self.theme)
+        # endregion
+        # endregion
 
-        options = {'filetypes': [('Numpy array', '.npy'), ('Comma-separated values', '.csv')],
-                   'initialfile': 'input.npy'}
-        self._save_input = we.SaveAs(master=self._f_save, text='Save input', file_options=options,
-                                     save_fcn=self.save_input)
-        self._save_input.pack(side=tk.LEFT)
-
-        options['initialfile'] = 'sinogram.npy'
-        self._save_input = we.SaveAs(master=self._f_save, text='Save sinogram', file_options=options,
-                                     save_fcn=self.save_sinogram)
-        self._save_input.pack(side=tk.LEFT)
-
-        options['initialfile'] = 'roconstruction.npy'
-        self._save_input = we.SaveAs(master=self._f_save, text='Save reconstruction', file_options=options,
-                                     save_fcn=self.save_reconstructed)
-        self._save_input.pack(side=tk.LEFT)
+        # Input configuration options -- Source image browser
+        self._intput_dir = we.DirBrowser(t_master=self._input_config_opts, label_text='Input directory', t_max_len=32)
+        self._intput_dir.configure(**self.theme)
+        self._intput_dir.configure_label(**self.theme)
+        self._intput_dir.pack(fill=tk.X, expand=True)
+        self._intput_dir.place(relx=0.01, rely=0.01, relwidth=0.98)
 
     @staticmethod
     def save_numpy(name, arr):
@@ -85,7 +193,7 @@ class Gui:
             return
         self.save_numpy(name, self.sinogram)
 
-    def save_reconstructed(self, name):
+    def save_reconstruction(self, name):
         if self.input is None:
             print('Reconstruction is not processed\n')
             return
@@ -195,14 +303,14 @@ class Gui:
         return self._nthreads.get()
 
     def run(self):
-        self._root.mainloop()
+        self.root.mainloop()
 
     def __method_observer(self, *args):
         if self._method.get() == 0:
-            self._f_method_options.config(text='FBP')
+            self._method_options.config(text='FBP')
             self._sart_pack.pack_forget()
             self._fbp_pack.pack()
         else:
-            self._f_method_options.config(text='SART')
+            self._method_options.config(text='SART')
             self._fbp_pack.pack_forget()
             self._sart_pack.pack()
