@@ -1,4 +1,4 @@
-from src.gui import Gui
+from gui import Gui
 
 
 print('Starting up...')
