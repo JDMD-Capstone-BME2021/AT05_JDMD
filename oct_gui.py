@@ -1,15 +1,14 @@
+import gui.window_elements as we
+from reconstruction.structs import ReconstructionOptions, ImgLoadOptions
+
 import tkinter as tk
 import numpy as np
-import oct
-from src import window_elements as we
-from PIL import Image
 
 
 class Gui:
     def __init__(self):
-        self.input = None
-        self.sinogram = None
-        self.reconstructed = None
+        self.e_load_images = None
+        self.e_start_reconstruction = None
 
         self._bgcolor = '#d9d9d9'
         self.theme = {'background': self._bgcolor}
@@ -63,7 +62,6 @@ class Gui:
         self.work_area.configure(**self.theme)
 
         # Canvas
-        # self._preview = tk.Canvas(self.work_area)
         self._preview = we.ImgView(self.work_area)
         self._preview.place(relx=0.29, rely=0.01, relheight=0.7, relwidth=0.7)
         self._preview.configure(**self.theme)
@@ -158,15 +156,15 @@ class Gui:
         # Options -- Reconstruction method observer: updates managed packs
         self._method.add_observer(self.__method_observer)
 
+        # endregion
         self._input_config_opts = tk.LabelFrame(self.work_area)
         self._input_config_opts.place(relx=0.01, rely=0.8, relheight=0.2, relwidth=0.6)
         self._input_config_opts.configure(relief='groove')
         self._input_config_opts.configure(text='Input configuration')
         self._input_config_opts.configure(**self.theme)
         # endregion
-        # endregion
 
-        self._process_start = tk.Button(master=self.work_area, text='Reconstruct', command=self.process)
+        self._process_start = tk.Button(master=self.work_area, text='Reconstruct', command=self.reconstruct)
         self._process_start.configure(**self.theme)
         self._process_start.place(relx=0.01, rely=0.71, relheight=0.05, relwidth=0.25)
 
@@ -177,6 +175,10 @@ class Gui:
         self._intput_dir.pack(fill=tk.X, expand=True)
         self._intput_dir.place(relx=0.01, rely=0.01, relwidth=0.98)
 
+        self._process_start = tk.Button(master=self._input_config_opts, text='Load images', command=self.load_images)
+        self._process_start.configure(**self.theme)
+        self._process_start.place(relx=0.01, rely=0.3)
+
     @staticmethod
     def save_numpy(name, arr):
         ext = name[-3:]
@@ -186,68 +188,29 @@ class Gui:
         elif ext == 'csv':
             np.savetxt(name, arr, delimiter=',')
 
+    # todo add events for save/load
     def save_input(self, name):
-        if self.input is None:
-            print('Input is not processed\n')
-            return
-        self.save_numpy(name, self.input)
-        print('Input saved as ' + name)
+        raise NotImplementedError()
 
     def save_sinogram(self, name):
-        if self.input is None:
-            print('Sinogram is not processed\n')
-            return
-        self.save_numpy(name, self.sinogram)
-        print('Sinogram saved as ' + name)
+        raise NotImplementedError()
 
     def save_reconstruction(self, name):
-        if self.input is None:
-            print('Reconstruction is not processed\n')
-            return
-        self.save_numpy(name, self.reconstructed)
-        print('Reconstruction saved as ' + name)
+        raise NotImplementedError()
 
-    def process(self):
-        # freezing parameters
-        input_dir = self.input_dir
-        resolution = self.resolution
-        padding = self.padding
-        method = self.method
-        nthreads = self.nthreads
-        start_angle = self.start_angle
-        end_angle = self.end_angle
-        fbp_filter = self.fbp_filter
-        fbp_interpolation = self.fbp_interpolation
-        sart_iterations = self.sart_iterations
-        sart_relaxation = self.sart_relaxation
+    @property
+    def reconstruction_options(self):
+        return ReconstructionOptions(method=self.method, nthreads=self.nthreads,
+                                     start_angle=self.start_angle, end_angle=self.end_angle,
+                                     fbp_filter=self.fbp_filter, fbp_interpolations=self.fbp_interpolation,
+                                     sart_iterations=self.sart_iterations, sart_relaxation=self.sart_relaxation)
 
-        # loading images
-        self.input = oct.load_images(input_dir, resolution=resolution, padding=padding)
+    def load_images(self):
+        opts = ImgLoadOptions(self.input_dir, self.resolution, self.padding)
+        self.e_load_images.set(opts)
 
-        # constructing sinogram
-        self.sinogram = oct.make_sinogram(self.input)
-
-        # calculating reconstruction parameters
-        nsamples = self.input.shape[2]
-        theta = np.linspace(start_angle, end_angle, nsamples, endpoint=False)
-        reconstruction_opt = {'theta': theta}
-        if method == 'fbp':
-            reconstruction_opt['filter'] = fbp_filter
-            reconstruction_opt['interpolation'] = fbp_interpolation
-        elif method == 'sart':
-            reconstruction_opt['relaxation'] = sart_relaxation
-
-        # reconstructing image
-        self.reconstructed = oct.reconstruct(self.sinogram, nthreads=nthreads, method=method, **reconstruction_opt)
-
-        # additional iterations for SART
-        if method == 'sart' and sart_iterations > 1:
-            for i in range(1, sart_iterations):
-                print('SART iteration ' + str(i + 1))
-                reconstruction_opt['image'] = self.reconstructed
-                self.reconstructed = oct.reconstruct(self.sinogram, nthreads=nthreads, method=method,
-                                                     **reconstruction_opt)
-        print('Reconstruction complete')
+    def reconstruct(self):
+        self.e_start_reconstruction.set(self.reconstruction_options)
 
     @property
     def method(self):
