@@ -1,4 +1,4 @@
-from oct_gui import Gui
+from gui_window import Gui
 from concurrent.futures import ThreadPoolExecutor
 from threading import Event
 from reconstruction.events import ReconstructionEvent, LoadimagesEvent
