@@ -1,8 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
-from src import callbacks
 from PIL import Image, ImageTk
+from gui import callbacks
 
 
 class ManagedPack:
