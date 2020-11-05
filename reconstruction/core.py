@@ -85,7 +85,7 @@ def _reconstruct(sinogram: np.array, nthreads: int = 1, method: str = 'fbp', **k
     return reconstructed
 
 
-def reconstruct(sinogram, opts: ReconstructionOptions):
+def reconstruct(sinogram, opts: ReconstructionOptions) -> np.array:
     nsamples = sinogram.shape[2]
     theta = np.linspace(opts.start_angle, opts.end_angle, nsamples, endpoint=False)
     reconstruction_opt = {'theta': theta}
@@ -103,3 +103,5 @@ def reconstruct(sinogram, opts: ReconstructionOptions):
             print('SART iteration ' + str(i + 1))
             reconstruction_opt['image'] = reconstructed
             reconstructed = _reconstruct(sinogram, nthreads=opts.nthreads, method=opts.method, **reconstruction_opt)
+
+    return reconstructed

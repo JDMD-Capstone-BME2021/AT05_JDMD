@@ -3,6 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 from threading import Event
 from reconstruction.events import ReconstructionEvent, LoadimagesEvent
 from reconstruction import core
+import matplotlib.pyplot as plt
 
 nthreads = 4
 update_interval = 1 / 100
@@ -57,6 +58,7 @@ def on_reconstruct_complete(future):
     global reconstruction
     reconstruction = future.result()
     print('Image reconstruction complete')
+    print('Output shape: ', reconstruction.shape)
 
 
 print('Starting up...')
