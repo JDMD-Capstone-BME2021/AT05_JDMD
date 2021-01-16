@@ -100,3 +100,4 @@ $RECYCLE.BIN/
 *.lnk
 
 *.pyc
+/python/app.log

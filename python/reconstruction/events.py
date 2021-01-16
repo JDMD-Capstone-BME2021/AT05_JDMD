@@ -1,8 +1,8 @@
-from reconstruction.structs import ReconstructionOptions
+from python.reconstruction.structs import ReconstructionOptions
 
 from threading import Event
 from threading import Lock
-from reconstruction.structs import ImgLoadOptions
+from python.reconstruction.structs import ImgLoadOptions
 
 
 class ReconstructionEvent(Event):

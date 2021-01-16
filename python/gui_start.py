@@ -1,9 +1,27 @@
-from gui_window import Gui
+# Threading
 from concurrent.futures import ThreadPoolExecutor
 from threading import Event
-from reconstruction.events import ReconstructionEvent, LoadimagesEvent
+# GUI
+from gui_window import Gui
+# Background functions
 from reconstruction import core
-import matplotlib.pyplot as plt
+from reconstruction.events import ReconstructionEvent, LoadimagesEvent
+
+# Utilities
+import logging.config
+import argparse
+from pathlib import Path
+
+BASEDIR = Path()  # current working directory, must contain logging.conf
+
+# configure logger
+log_config = BASEDIR / 'logging.conf'
+logging.config.fileConfig(log_config, disable_existing_loggers=False)
+logger = logging.getLogger('app')
+logger.info('Session started')
+# todo use json logger
+# https://www.datadoghq.com/blog/python-logging-best-practices/
+# https://libraries.io/pypi/python-json-logger
 
 nthreads = 4
 update_interval = 1 / 100
@@ -23,7 +41,7 @@ def start_gui():
     window.e_load_images = e_load_images
     window.e_start_reconstruction = e_start_reconstruction
     window.run()
-    print('GUI exited')
+    logger.info('GUI exited')
     e_gui_exited.set()
 
 
@@ -42,10 +60,10 @@ def on_load_images_complete(future):
     global images, sinogram
     # with lock:
     images = future.result()
-    print('Image loading complete. Constructing sinogram...')
+    logger.info('Image loading complete. Constructing sinogram...')
     sinogram = core.make_sinogram(images)
-    print('Sinogram construction complete')
-    print('You can now run image reconstruction')
+    logger.info('Sinogram construction complete')
+    logger.info('You can now run image reconstruction')
 
 
 def reconstruct():
@@ -57,16 +75,16 @@ def reconstruct():
 def on_reconstruct_complete(future):
     global reconstruction
     reconstruction = future.result()
-    print('Image reconstruction complete')
-    print('Output shape: ', reconstruction.shape)
+    logger.info('Image reconstruction complete')
+    logger.info('Output shape: ', reconstruction.shape)
 
 
-print('Starting up...')
+logger.info('Starting GUI')
 
 executor = ThreadPoolExecutor(nthreads)
-print('Number of threads allocated: ' + str(nthreads))
+logger.info('Number of threads allocated: ' + str(nthreads))
 
-print('Starting GUI...')
+logger.info('Starting GUI...')
 gui_thread = executor.submit(start_gui)
 
 while not e_gui_exited.is_set():
@@ -82,5 +100,5 @@ while not e_gui_exited.is_set():
 
 e_gui_exited.wait()
 
-print('Quitting...')
+logger.info('Quitting...')
 quit()

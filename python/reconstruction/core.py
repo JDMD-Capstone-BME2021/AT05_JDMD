@@ -1,5 +1,5 @@
-import reconstruction.imgprep as imgprep
-from reconstruction.structs import ReconstructionOptions
+import python.reconstruction.imgprep as imgprep
+from python.reconstruction.structs import ReconstructionOptions
 
 from pathlib import Path
 from skimage.transform import iradon, iradon_sart

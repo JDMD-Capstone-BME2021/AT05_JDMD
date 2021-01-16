@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 from PIL import Image, ImageTk
-from gui import callbacks
+from python.gui import callbacks
 
 
 class ManagedPack:
