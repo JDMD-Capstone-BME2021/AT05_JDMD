@@ -4,6 +4,11 @@ from reconstruction.structs import ReconstructionOptions, ImgLoadOptions
 import tkinter as tk
 import numpy as np
 
+from blinker import Signal
+
+s_load_images = Signal()
+s_reconstruct = Signal()
+
 
 class Gui:
     def __init__(self):
@@ -179,15 +184,6 @@ class Gui:
         self._process_start.configure(**self.theme)
         self._process_start.place(relx=0.01, rely=0.3)
 
-    @staticmethod
-    def save_numpy(name, arr):
-        ext = name[-3:]
-        print(ext)
-        if ext == 'npy':
-            np.save(name, arr)
-        elif ext == 'csv':
-            np.savetxt(name, arr, delimiter=',')
-
     # todo add events for save/load
     def save_input(self, name):
         raise NotImplementedError()
@@ -199,18 +195,31 @@ class Gui:
         raise NotImplementedError()
 
     @property
+    def load_options(self):
+        return {
+            'input_dir': self.input_dir,
+            'resolution': self.resolution,
+            'padding': self.padding
+        }
+
+    @property
     def reconstruction_options(self):
-        return ReconstructionOptions(method=self.method, nthreads=self.nthreads,
-                                     start_angle=self.start_angle, end_angle=self.end_angle,
-                                     fbp_filter=self.fbp_filter, fbp_interpolations=self.fbp_interpolation,
-                                     sart_iterations=self.sart_iterations, sart_relaxation=self.sart_relaxation)
+        return {
+            'method': self.method,
+            'nthreads': self.nthreads,
+            'start_angle': self.start_angle,
+            'end_angle': self.end_angle,
+            'fbp_filter': self.fbp_filter,
+            'fbp_interpolation': self.fbp_interpolation,
+            'sart_iterations': self.sart_iterations,
+            'sart_relaxation': self.sart_relaxation
+        }
 
     def load_images(self):
-        opts = ImgLoadOptions(self.input_dir, self.resolution, self.padding)
-        self.e_load_images.set(opts)
+        s_load_images.send(**self.load_options)
 
     def reconstruct(self):
-        self.e_start_reconstruction.set(self.reconstruction_options)
+        s_reconstruct.send(self.reconstruction_options)
 
     @property
     def method(self):
