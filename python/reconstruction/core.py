@@ -7,7 +7,7 @@ import numpy as np
 import threading
 
 
-def load_images(dir_path: str, resolution: int = 256, padding: float = 0.3) -> np.array:
+def load_images(input_dir: str, resolution: int = 256, padding: float = 0.3) -> np.array:
     """
     Loads images from specified directory and preprocesses them:
 
@@ -19,12 +19,12 @@ def load_images(dir_path: str, resolution: int = 256, padding: float = 0.3) -> n
 
     - rescales it
 
-    :param dir_path: directory to load images from
+    :param input_dir: directory to load images from
     :param resolution: final image resolution
     :param padding: padding fraction
     :return: array of images, with image index in position 2
     """
-    files = [x for x in Path(dir_path).rglob('*')]
+    files = [x for x in Path(input_dir).rglob('*')]
     n = len(files)
     images = np.zeros((resolution, resolution, n))
     for i in range(n):
