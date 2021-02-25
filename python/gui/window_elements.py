@@ -164,9 +164,33 @@ class ImgView(tk.Canvas):
         super().__init__(master, **kw)
         self._image = None
         self._render = None
+        self.bind("<Configure>", self.on_resize)
+        self.height = self.winfo_reqheight()
+        self.width = self.winfo_reqwidth()
 
-    def set_image(self, image: Image, sz=(256, 256)):
+    def set_image(self, image: Image, sz=None):
+        if sz is None:
+            self.update()
+            sz = (self.winfo_width(), self.winfo_height())
         self._image = image.resize(sz)
         self._render = ImageTk.PhotoImage(self._image)
         self.delete('all')
         self.create_image(sz[0] // 2, sz[1] // 2, image=self._render)
+
+    def on_resize(self, event):
+        self.master.update()
+        sz = int(self.master.winfo_height() * 0.7)
+        self.configure(width=sz, height=sz)
+        self.update()
+        # todo: redraw contents
+        pass
+        # determine the ratio of old width/height to new width/height
+        # wscale = float(event.width) / self.width
+        # hscale = float(event.height) / self.height
+        # self.width = event.width
+        # self.height = event.height
+        # # resize the canvas
+        # self.config(width=self.width, height=self.height)
+        # self.config(width=200, height=200)
+        # # rescale all the objects tagged with the "all" tag
+        # self.scale("all", 0, 0, wscale, hscale)
