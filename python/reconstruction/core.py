@@ -7,7 +7,7 @@ import numpy as np
 import threading
 
 
-def load_images(input_dir: str, resolution: int = 256, padding: float = 0.3) -> np.array:
+def load_images(input_dir: str, resolution: int = 256, padding: float = 0.3) -> (np.array, np.array, np.array):
     """
     Loads images from specified directory and preprocesses them:
 
@@ -26,12 +26,19 @@ def load_images(input_dir: str, resolution: int = 256, padding: float = 0.3) -> 
     """
     files = [x for x in Path(input_dir).rglob('*')]
     n = len(files)
-    images = np.zeros((resolution, resolution, n))
+    # images = np.zeros((resolution, resolution, n))
+    r_img = np.zeros((resolution, resolution, n))
+    g_img = np.zeros((resolution, resolution, n))
+    b_img = np.zeros((resolution, resolution, n))
     for i in range(n):
         print('Reading ' + str(files[i]) + '\n')
-        images[:, :, i] = imgprep.prepare_img(imgprep.load_img(files[i]), resolution=resolution, padding=padding)
+        r, g, b = imgprep.prepare_img(imgprep.load_img(files[i]), resolution=resolution, padding=padding)
+        # images[:, :, i] = r
+        r_img[:, :, i] = r
+        g_img[:, :, i] = g
+        b_img[:, :, i] = b
 
-    return images
+    return r_img, g_img, b_img
 
 
 def make_sinogram(images: np.array) -> np.array:

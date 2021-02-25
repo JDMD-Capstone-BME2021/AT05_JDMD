@@ -4,7 +4,7 @@ from skimage.transform import rescale
 import numpy as np
 
 
-def _make_square(im: Image, minsize: int = 256, fill_color: tuple = (255, 255, 255, 0)) -> np.array:
+def _make_square(im: Image, minsize: int = 256, fill_color: tuple = (255, 255, 255, 0)) -> Image:
     """
     Creates a sqaure image of the specified size with other image pasted in center
     :param im: image to paste
@@ -27,7 +27,7 @@ def load_img(img_path: Path) -> np.array:
     return src
 
 
-def prepare_img(src, resolution: int = 256, padding: float = 0.3) -> np.array:
+def prepare_img(src, resolution: int = 256, padding: float = 0.3) -> (np.array, np.array, np.array):
     """
     Preprocesses the image -- makes it square, converts to greyscale, inverts, adds padding and rescales
     :param src: image
@@ -36,6 +36,12 @@ def prepare_img(src, resolution: int = 256, padding: float = 0.3) -> np.array:
     :return: processed image as a np.array
     """
     img = _make_square(src, minsize=int(src.size[0] * (1 + padding)))
-    img = ImageOps.grayscale(img)
-    img = ImageOps.invert(img)
-    return rescale(np.asarray(img), scale=resolution / img.size[0], multichannel=False, anti_aliasing=True)
+    r, g, b, _ = img.split()
+    r, g, b = np.asarray(r), np.asarray(g), np.asarray(b)
+    scale = resolution / r.shape[0]
+    r = rescale(r, scale=scale, multichannel=False, anti_aliasing=True)
+    g = rescale(g, scale=scale, multichannel=False, anti_aliasing=True)
+    b = rescale(b, scale=scale, multichannel=False, anti_aliasing=True)
+    # img = ImageOps.grayscale(img)
+    # img = ImageOps.invert(img)
+    return r, g, b
