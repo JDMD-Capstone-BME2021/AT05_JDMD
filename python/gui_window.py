@@ -3,11 +3,14 @@ from reconstruction.structs import ReconstructionOptions, ImgLoadOptions
 
 import tkinter as tk
 import numpy as np
+from PIL import Image
 
 from blinker import Signal
+from tkinter import filedialog
 
 s_load_images = Signal()
 s_reconstruct = Signal()
+s_save_images = Signal()
 
 
 class Gui:
@@ -33,13 +36,15 @@ class Gui:
         # Tool bar -- Save input
         options = {'filetypes': [('Numpy array', '.npy'), ('Comma-separated values', '.csv')],
                    'initialfile': 'input.npy'}
-        self._save_input = we.SaveAs(master=self._tool_bar, text='Save input', file_options=options,
-                                     save_fcn=self.save_input)
-        self._save_input.configure(**self.theme)
-        self._save_input.configure(**self.btn_opts)
-        self._save_input.configure_btn(**self.theme)
-        self._save_input.pack(side=tk.LEFT)
+        # self._save_input = we.SaveAs(master=self._tool_bar, text='Save input', file_options=options,
+        #                              save_fcn=self.save_input)
+        # self._save_input.configure(**self.theme)
+        # self._save_input.configure(**self.btn_opts)
+        # self._save_input.configure_btn(**self.theme)
+        # self._save_input.pack(side=tk.LEFT)
 
+        self._save_sinogram = tk.Button(master=self._tool_bar, text='Save session', command=self.save_input)
+        self._save_sinogram.pack(side=tk.LEFT)
         # Tool bar -- Save sinogram
         options['initialfile'] = 'sinogram.npy'
         self._save_sinogram = we.SaveAs(master=self._tool_bar, text='Save sinogram', file_options=options,
@@ -68,13 +73,18 @@ class Gui:
 
         # Canvas
         self._preview = we.ImgView(self.work_area)
-        self._preview.place(relx=0.29, rely=0.01, relheight=0.7, relwidth=0.7)
+        # self._preview.update_size()
+        self._preview.place(relx=0.3, rely=0.02)
         self._preview.configure(**self.theme)
         self._preview.configure(borderwidth="2")
         self._preview.configure(insertbackground="black")
         self._preview.configure(relief="ridge")
         self._preview.configure(selectbackground="blue")
         self._preview.configure(selectforeground="white")
+
+        # todo: remove placeholder
+        img = Image.open('gui/sample.jpg')
+        self._preview.set_image(img)
 
         # region Options
         self._options = tk.LabelFrame(self.work_area)
@@ -185,8 +195,13 @@ class Gui:
         self._process_start.place(relx=0.01, rely=0.3)
 
     # todo add events for save/load
-    def save_input(self, name):
-        raise NotImplementedError()
+    def save_input(self):
+        t_dir = filedialog.askdirectory(initialdir='/', title='Select directory to save input')
+        opts = {
+            'filepath': t_dir
+        }
+        s_save_images.send(**opts)
+        # raise NotImplementedError()
 
     def save_sinogram(self, name):
         raise NotImplementedError()
@@ -219,7 +234,7 @@ class Gui:
         s_load_images.send(**self.load_options)
 
     def reconstruct(self):
-        s_reconstruct.send(self.reconstruction_options)
+        s_reconstruct.send(**self.reconstruction_options)
 
     @property
     def method(self):

@@ -1,5 +1,8 @@
 from reconstruction import core
 from blinker import Signal
+from PIL import Image
+from array2gif import write_gif
+import numpy as np
 
 
 class Session:
@@ -23,7 +26,7 @@ class Session:
         # todo: verify data
         if 'input_dir' not in self.load_options:
             quit(1)
-        self.images = core.load_images(**self.load_options)
+        self.images, _, _ = core.load_images(**self.load_options)
         self.is_images_loaded = True
         self.s_image_loadad.send()
 
@@ -41,4 +44,11 @@ class Session:
         self.s_reconstructed.send()
 
     def save_session(self, filepath):
-        pass
+        print('trying to save inputs')
+        np.save('data.npy', self.images)
+        print('trying to save as image')
+        im = Image.fromarray(self.images[:, :, 100])
+        im.show()
+        # im.save('data.png', 'PNG')
+        print('inputs saved')
+        # pass

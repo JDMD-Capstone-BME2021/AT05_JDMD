@@ -3,7 +3,7 @@ from threading import Event
 
 from session import Session
 
-from gui_window import Gui, s_reconstruct, s_load_images
+from gui_window import Gui, s_reconstruct, s_load_images, s_save_images
 
 import logging.config
 from pathlib import Path
@@ -32,6 +32,13 @@ def start_gui():
 @active_session.s_error.connect
 def on_session_error(sender, **kwargs):
     logger.error(kwargs['message'])
+
+
+@s_save_images.connect
+def on_save_images(sender, **kwargs):
+    logger.info('Saving images...')
+    print(kwargs)
+    executor.submit(active_session.save_session, kwargs)
 
 
 @s_load_images.connect

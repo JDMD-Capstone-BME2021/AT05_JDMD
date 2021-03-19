@@ -31,7 +31,7 @@ def load_images(input_dir: str, resolution: int = 256, padding: float = 0.3) -> 
     g_img = np.zeros((resolution, resolution, n))
     b_img = np.zeros((resolution, resolution, n))
     for i in range(n):
-        print('Reading ' + str(files[i]) + '\n')
+        # print('Reading ' + str(files[i]) + '\n')
         r, g, b = imgprep.prepare_img(imgprep.load_img(files[i]), resolution=resolution, padding=padding)
         # images[:, :, i] = r
         r_img[:, :, i] = r
@@ -75,7 +75,7 @@ def _reconstruct(sinogram: np.array, nthreads: int = 1, method: str = 'fbp', **k
     def __reconstruct(start, step):
         for j in range(start, sinogram.shape[0], step):
             tmp = __iradon(sinogram[j, :, :], **kwargs)
-            lock.acquire()
+            lock.acquire()  # TODO check if numpy has atomic write
             reconstructed[:, :, j] = tmp
             lock.release()
 
