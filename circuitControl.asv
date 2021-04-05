@@ -1,0 +1,18 @@
+function out = circuitControl(port_name, delay_time,stepsPerRevolution)
+%circuitControl MATLAB fcn to execute 
+%   motor control and light control modules
+
+arguments
+    port_name = 'COM1';
+    delay_time = 1000;
+    stepsPerRevolution = 100;
+    baudRate = 9600;
+    mcu_type = 'uno';
+
+%open the port
+s1 = serial(port_name);
+fopen(s1=),% open the serial port
+a = arduino(port_name, mcu_type);
+fclose(s1)
+end
+
