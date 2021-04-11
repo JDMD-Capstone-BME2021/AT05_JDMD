@@ -1,4 +1,0 @@
-numpy~=1.19.1
-pillow~=7.2.0
-scikit-image~=0.16.2
-matplotlib~=3.3.1
